@@ -1,12 +1,13 @@
 from fastapi import FastAPI
+from langchain.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field
 from typing import Annotated
 import pickle
 import numpy as np
 from genai.helper import build_prompt_inputs
 from genai.chatPrompt import chatPrompt
-from genai.model import getTheAnswere
-from Student import Student
+from genai.model import llm_model
+from Student import Student, StudentReport
 
 
 app = FastAPI()
@@ -41,7 +42,32 @@ def predict_score(student: Student):
 
     # Predict
     predicted_score = model.predict(final_input)
+
+    # Helper function for taking formatted input
     build_input = build_prompt_inputs(predicted_score[0], student)
-    prompt = chatPrompt(predicted_score[0], build_input)
-    report = getTheAnswere(prompt)
-    return {'result': float(predicted_score[0]), 'report' : report}
+
+
+    parser = PydanticOutputParser(pydantic_object=StudentReport)
+    format_instructions = parser.get_format_instructions()
+
+    # Get the prompt template (NOT formatted yet)
+    prompt = chatPrompt()
+
+    llm = llm_model()
+
+    # Create runnable chain
+    chain = prompt | llm | parser
+
+    # Inputs to inject at runtime
+    inputs = {
+        "predicted_score": predicted_score[0],
+        **build_input,
+        "format_instructions": format_instructions
+    }
+
+    # Invoke chain
+    result = chain.invoke(inputs)
+
+    print("Resultssss", result)
+
+    return {'result': float(predicted_score[0]), 'report' : result}

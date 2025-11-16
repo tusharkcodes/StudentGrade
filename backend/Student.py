@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Annotated
+from typing import Annotated, List
 
 class Student(BaseModel):
     Hours_Studied : Annotated[int, Field(...)]
@@ -14,3 +14,15 @@ class Student(BaseModel):
     School_Type_Public : Annotated[int, Field(...)]
     Internet_Access_Yes : Annotated[int, Field(...)]
     Extracurricular_Activities_Yes : Annotated[int, Field(...)]
+
+
+
+
+class StudentReport(BaseModel):
+    performance_summary: str
+    score_analysis: str
+    strengths: List[str]
+    weak_areas: List[str]
+    category_insights: dict
+    recommendations: List[str]
+    final_message: str
