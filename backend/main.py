@@ -3,35 +3,24 @@ from pydantic import BaseModel, Field
 from typing import Annotated
 import pickle
 import numpy as np
+from genai.helper import build_prompt_inputs
+from genai.chatPrompt import chatPrompt
 from genai.model import getTheAnswere
+from Student import Student
+
 
 app = FastAPI()
 
-# ✅ Load the model correctly
 model = pickle.load(open("model.pkl", "rb"))
-
-class Student(BaseModel):
-    Hours_Studied : Annotated[int, Field(...)]
-    Attendance : Annotated[int, Field(...)]
-    Access_to_Resources : Annotated[int, Field(...)]
-    Sleep_Hours : Annotated[int, Field(...)]
-    Previous_Scores : Annotated[int, Field(...)]
-    Motivation_Level : Annotated[int, Field(...)]
-    Tutoring_Sessions : Annotated[int, Field(...)]
-    Teacher_Quality : Annotated[int, Field(...)]
-    Learning_Disabilities_Yes : Annotated[int, Field(...)]
-    School_Type_Public : Annotated[int, Field(...)]
-    Internet_Access_Yes : Annotated[int, Field(...)]
-    Extracurricular_Activities_Yes : Annotated[int, Field(...)]
 
 @app.get("/")
 def hello():
     return {'message': 'Hello world'}
 
+
 @app.post("/predict")
 def predict_score(student: Student):
 
-    # Extract input features
     features = [
         student.Hours_Studied,
         student.Attendance,
@@ -51,7 +40,8 @@ def predict_score(student: Student):
     final_input = np.array([features])
 
     # Predict
-    result = model.predict(final_input)
-    ans = getTheAnswere()
-    print("Answere of the getTheAnswere is here :", ans)
-    return {'result': float(result[0])}
+    predicted_score = model.predict(final_input)
+    build_input = build_prompt_inputs(predicted_score[0], student)
+    prompt = chatPrompt(predicted_score[0], build_input)
+    report = getTheAnswere(prompt)
+    return {'result': float(predicted_score[0]), 'report' : report}

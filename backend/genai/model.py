@@ -3,5 +3,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
  
-def getTheAnswere():
-    return "Narendra Modi"
+def getTheAnswere(prompt):
+   model = GoogleGenerativeAI(model='gemini-2.5-flash')
+   result = model.invoke(prompt)
+
+   return result
