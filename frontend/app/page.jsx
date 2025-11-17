@@ -7,6 +7,7 @@ import PredictionPage from '@/components/pages/prediction-page'
 import ResultsPage from '@/components/pages/results-page'
 
 export default function App() {
+  console.log("Inside the App")
   const [currentPage, setCurrentPage] = useState('home')
   const [formData, setFormData] = useState(null)
   const [results, setResults] = useState(null)
